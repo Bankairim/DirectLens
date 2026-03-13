@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2026 Asanoha Labs
- * DirectLens is free software: you can redistribute it and/or modify
+ *
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License.
  */
@@ -121,7 +122,19 @@ fun MainSettingsScreen() {
             },
             icon = { Image(painterResource(R.drawable.favicon), null, modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp))) },
             title = { Text(stringResource(R.string.welcome_title), textAlign = TextAlign.Center) },
-            text = { Text(stringResource(R.string.welcome_text), textAlign = TextAlign.Center) },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(stringResource(R.string.welcome_text), textAlign = TextAlign.Center)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/banka89"))) },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+                    ) {
+                        Text(stringResource(R.string.donate_button))
+                    }
+                }
+            },
             shape = RoundedCornerShape(28.dp)
         )
     }
@@ -152,10 +165,17 @@ fun MainSettingsScreen() {
             modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Image(painterResource(R.drawable.favicontitle), null, modifier = Modifier.fillMaxWidth(0.6f).aspectRatio(1f), contentScale = ContentScale.Fit)
             Spacer(modifier = Modifier.height(16.dp))
             Text(stringResource(R.string.welcome_text).substringBefore("\n\n"), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/banka89"))) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+            ) {
+                Text(stringResource(R.string.donate_button))
+            }
             Spacer(modifier = Modifier.height(32.dp))
 
             // 1. Service Switch

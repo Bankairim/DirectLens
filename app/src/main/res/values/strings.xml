@@ -42,7 +42,8 @@
     <string name="faq_disclaimer_title">Legal Disclaimer</string>
     <string name="faq_disclaimer_text">DirectLens is an independent, open-source project. It is not affiliated with, authorized, maintained, sponsored, or endorsed by Google LLC. \"Google Lens\" is a trademark of Google LLC. Once an image is forwarded to the Google app, Google\'s own Terms of Service and Privacy Policy apply to that image and its subsequent processing.</string>
     <string name="faq_opensource_title">Open Source</string>
-    <string name="faq_opensource_text">DirectLens is free and open source (GPLv3).</string>
+    <string name="faq_opensource_text">DirectLens is free and open source (GPLv3). It requires no root access.</string>
 
     <string name="github_button">View on GitHub</string>
+    <string name="donate_button">☕ Support on PayPal</string>
 </resources>
