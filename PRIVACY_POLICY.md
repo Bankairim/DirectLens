@@ -1,6 +1,6 @@
 # Privacy Policy for DirectLens
 
-**Last Updated: October 2023**
+**Last Updated: March 2026**
 
 DirectLens is committed to protecting your privacy. This Privacy Policy explains our practices regarding the collection, use, and disclosure of information when you use our mobile application.
 
