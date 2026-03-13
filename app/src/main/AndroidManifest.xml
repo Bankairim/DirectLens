@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/favicon"
         android:label="DirectLens"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/favicon"
         android:supportsRtl="true"
         android:theme="@style/Theme.DirectLens"
         tools:targetApi="31">
@@ -23,17 +25,20 @@
             </intent-filter>
         </activity>
 
+        <!-- Activité de déclenchement : Totalement indépendante et invisible -->
         <activity
             android:name=".TrampolineActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:launchMode="singleInstance"
+            android:noHistory="true"
             android:exported="false" />
 
         <service
             android:name=".DirectLensService"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>

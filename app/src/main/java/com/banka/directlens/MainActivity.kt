@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2026 Asanoha Labs
+ * DirectLens is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License.
+ */
 package com.banka.directlens
 
 import android.content.ComponentName
@@ -159,17 +165,6 @@ fun MainSettingsScreen() {
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // HEADER AVEC LOGO + TITRE
-            Image(
-                painter = painterResource(id = R.drawable.favicontitle),
-                contentDescription = "DirectLens Logo",
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .aspectRatio(1f),
-                contentScale = ContentScale.Fit
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
             
             Text(
                 text = stringResource(R.string.welcome_text).substringBefore("\n\n"),
