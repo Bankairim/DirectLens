@@ -32,4 +32,16 @@
     <string name="pos_y">Y-verschuiving</string>
     <string name="delete_zone">Verwijderen</string>
     <string name="reset_confirm">Instellingen herstellen?</string>
+
+    <!-- About & FAQ -->
+    <string name="about_header">Informatie</string>
+    <string name="faq_battery_title">Batterij &amp; Prestaties</string>
+    <string name="faq_battery_text">DirectLens is ontworpen om ultralicht te zijn. Het wordt alleen wakker wanneer u de detectiezone aanraakt en verbruikt vrijwel geen batterij.</string>
+    <string name="faq_privacy_title">Privacy &amp; Gegevens</string>
+    <string name="faq_privacy_text">DirectLens verzamelt absoluut geen persoonlijke gegevens. Screenshots worden lokaal op uw apparaat gemaakt en rechtstreeks naar de officiële Google-app doorgestuurd. We gebruiken geen externe servers en hebben geen trackingmechanismen.</string>
+    <string name="faq_disclaimer_title">Juridische Disclaimer</string>
+    <string name="faq_disclaimer_text">DirectLens is een onafhankelijk, open-source project. Het is niet gelieerd aan, geautoriseerd door, onderhouden door, gesponsord door of onderschreven door Google LLC. \"Google Lens\" is un handelsmerk van Google LLC. Zodra een afbeelding wordt doorgestuurd naar de Google-app, zijn de eigen Servicevoorwaarden en het Privacybeleid van Google van toepassing op die afbeelding en de verdere verwerking ervan.</string>
+    <string name="faq_opensource_title">Open Source</string>
+    <string name="faq_opensource_text">DirectLens is gratis en open source (GPLv3).</string>
+    <string name="github_button">Bekijken op GitHub</string>
 </resources>

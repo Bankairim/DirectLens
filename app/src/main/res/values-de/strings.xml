@@ -32,4 +32,16 @@
     <string name="pos_y">Y-Versatz</string>
     <string name="delete_zone">Löschen</string>
     <string name="reset_confirm">Einstellungen zurücksetzen?</string>
+
+    <!-- About & FAQ -->
+    <string name="about_header">Informationen</string>
+    <string name="faq_battery_title">Akku &amp; Leistung</string>
+    <string name="faq_battery_text">DirectLens ist so konzipiert, dass es extrem leichtgewichtig ist. Es wird nur aktiviert, wenn Sie die Erkennungszone berühren, und verbraucht praktisch keinen Akku.</string>
+    <string name="faq_privacy_title">Datenschutz &amp; Daten</string>
+    <string name="faq_privacy_text">DirectLens sammelt absolut keine persönlichen Daten. Screenshots werden lokal auf Ihrem Gerät aufgenommen und direkt an die offizielle Google-App weitergeleitet. Wir verwenden keine Remote-Server und haben keine Tracking-Mechanismen.</string>
+    <string name="faq_disclaimer_title">Haftungsausschluss</string>
+    <string name="faq_disclaimer_text">DirectLens ist ein unabhängiges Open-Source-Projekt. Es ist nicht mit Google LLC verbunden, autorisiert, gewartet, gesponsert oder von Google LLC unterstützt. \"Google Lens\" ist eine Marke von Google LLC. Sobald ein Bild an die Google-App weitergeleitet wird, gelten die eigenen Nutzungsbedingungen und Datenschutzbestimmungen von Google für dieses Bild.</string>
+    <string name="faq_opensource_title">Open Source</string>
+    <string name="faq_opensource_text">DirectLens ist kostenlos und quelloffen (GPLv3).</string>
+    <string name="github_button">Auf GitHub anzeigen</string>
 </resources>

@@ -10,6 +10,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.VibrationEffect
@@ -47,6 +48,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.banka.directlens.ui.theme.DirectLensTheme
+import java.util.Calendar
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,9 +91,9 @@ fun MainSettingsScreen() {
     var masterEnabled by remember { mutableStateOf(prefs.getBoolean("master_enabled", true)) }
     var hapticStrength by remember { mutableIntStateOf(prefs.getInt("haptic_strength", 50)) }
     var config by remember { mutableStateOf(configManager.getConfig()) }
-    
-    // Popup de bienvenue
     var showWelcomeDialog by remember { mutableStateOf(prefs.getBoolean("first_launch", true)) }
+
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
 
     fun updateConfig(newConfig: OverlayConfig) {
         config = newConfig
@@ -119,12 +121,7 @@ fun MainSettingsScreen() {
             },
             icon = { Image(painterResource(R.drawable.favicon), null, modifier = Modifier.size(48.dp).clip(RoundedCornerShape(8.dp))) },
             title = { Text(stringResource(R.string.welcome_title), textAlign = TextAlign.Center) },
-            text = {
-                Text(
-                    stringResource(R.string.welcome_text),
-                    textAlign = TextAlign.Center
-                )
-            },
+            text = { Text(stringResource(R.string.welcome_text), textAlign = TextAlign.Center) },
             shape = RoundedCornerShape(28.dp)
         )
     }
@@ -135,11 +132,7 @@ fun MainSettingsScreen() {
             TopAppBar(
                 title = { 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.favicon),
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp))
-                        )
+                        Image(painterResource(R.drawable.favicon), null, modifier = Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)))
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(stringResource(R.string.app_name), fontWeight = FontWeight.ExtraBold)
                     }
@@ -156,46 +149,16 @@ fun MainSettingsScreen() {
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-
-            
-            Text(
-                text = stringResource(R.string.welcome_text).substringBefore("\n\n"),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-
+            Image(painterResource(R.drawable.favicontitle), null, modifier = Modifier.fillMaxWidth(0.6f).aspectRatio(1f), contentScale = ContentScale.Fit)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(stringResource(R.string.welcome_text).substringBefore("\n\n"), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 1. État du Service & Permission
-            if (!isAccessibilityEnabled) {
-                Card(
-                    onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) },
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Accessibility, contentDescription = null, tint = MaterialTheme.colorScheme.onErrorContainer)
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(stringResource(R.string.service_disabled), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onErrorContainer)
-                            Text(stringResource(R.string.service_disabled_sub), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f))
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // 2. Master Switch principal
+            // 1. Service Switch
             SettingsToggleItem(
                 title = stringResource(R.string.service_active),
                 subtitle = if (masterEnabled) stringResource(R.string.service_active_sub) else stringResource(R.string.service_hidden_sub),
@@ -207,9 +170,29 @@ fun MainSettingsScreen() {
                 }
             )
 
+            // Permission Warning
+            if (!isAccessibilityEnabled) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Card(
+                    onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Accessibility, null, tint = MaterialTheme.colorScheme.onErrorContainer)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(stringResource(R.string.service_disabled), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onErrorContainer)
+                            Text(stringResource(R.string.service_disabled_sub), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f))
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 3. Réglage Haptique HD
+            // 2. Haptique HD
             SettingsSectionHeader(title = stringResource(R.string.haptic_header))
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
@@ -221,90 +204,88 @@ fun MainSettingsScreen() {
                         Text(stringResource(R.string.haptic_strength), style = MaterialTheme.typography.titleSmall)
                         Text("$hapticStrength%", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
-                    Slider(
-                        value = hapticStrength.toFloat(),
-                        onValueChange = { 
-                            hapticStrength = it.toInt()
-                            prefs.edit().putInt("haptic_strength", it.toInt()).apply()
-                            playHapticPreview(context, it.toInt())
-                        },
-                        valueRange = 1f..100f
-                    )
-                    Text(
-                        stringResource(R.string.haptic_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Slider(value = hapticStrength.toFloat(), onValueChange = { hapticStrength = it.toInt(); prefs.edit().putInt("haptic_strength", it.toInt()).apply(); playHapticPreview(context, it.toInt()) }, valueRange = 1f..100f)
+                    Text(stringResource(R.string.haptic_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 4. Configuration de l'Overlay (ALIGNÉ)
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), 
-                horizontalArrangement = Arrangement.SpaceBetween, 
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.zones_header),
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Switch(
-                    checked = config.isVisible, 
-                    onCheckedChange = { updateConfig(config.copy(isVisible = it)) }, 
-                    thumbContent = { Icon(Icons.Default.Visibility, null, modifier = Modifier.size(12.dp)) }
-                )
+            // 3. Zones de détection
+            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.zones_header).uppercase(), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp), color = MaterialTheme.colorScheme.primary)
+                Switch(checked = config.isVisible, onCheckedChange = { updateConfig(config.copy(isVisible = it)) }, thumbContent = { Icon(Icons.Default.Visibility, null, modifier = Modifier.size(12.dp)) })
             }
-            
             config.segments.forEachIndexed { index, segment ->
-                SegmentEditorItem(
-                    index = index,
-                    segment = segment,
-                    isExpanded = config.activeSegmentIndex == index,
-                    onExpandToggle = { updateConfig(config.copy(activeSegmentIndex = if (config.activeSegmentIndex == index) -1 else index)) },
-                    onUpdate = { updated ->
-                        val newSegments = config.segments.toMutableList()
-                        newSegments[index] = updated
-                        updateConfig(config.copy(segments = newSegments))
-                    },
-                    onDelete = {
-                        val newSegments = config.segments.toMutableList()
-                        newSegments.removeAt(index)
-                        updateConfig(config.copy(segments = newSegments, activeSegmentIndex = -1))
-                    }
-                )
+                SegmentEditorItem(index = index, segment = segment, isExpanded = config.activeSegmentIndex == index, onExpandToggle = { updateConfig(config.copy(activeSegmentIndex = if (config.activeSegmentIndex == index) -1 else index)) }, onUpdate = { updated -> val newSegments = config.segments.toMutableList(); newSegments[index] = updated; updateConfig(config.copy(segments = newSegments)) }, onDelete = { val newSegments = config.segments.toMutableList(); newSegments.removeAt(index); updateConfig(config.copy(segments = newSegments, activeSegmentIndex = -1)) })
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            
             if (masterEnabled) {
-                Button(
-                    onClick = {
-                        val currentSegments = config.segments.toMutableList()
-                        val metrics = context.resources.displayMetrics
-                        currentSegments.add(OverlaySegment(yOffset = metrics.heightPixels - 200))
-                        updateConfig(config.copy(segments = currentSegments))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
+                Button(onClick = { val currentSegments = config.segments.toMutableList(); val metrics = context.resources.displayMetrics; currentSegments.add(OverlaySegment(yOffset = metrics.heightPixels - 200)); updateConfig(config.copy(segments = currentSegments)) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Icon(Icons.Default.Add, null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.add_zone))
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // FOOTER AVEC LE TITRE SEUL
-            Image(
-                painter = painterResource(id = R.drawable.title),
-                contentDescription = null,
-                modifier = Modifier.height(24.dp).alpha(0.5f),
-                contentScale = ContentScale.Fit
-            )
             Spacer(modifier = Modifier.height(32.dp))
+
+            // 4. SECTION INFORMATIONS (FAQ & GITHUB)
+            SettingsSectionHeader(title = stringResource(R.string.about_header))
+            
+            // GitHub Button
+            Button(
+                onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Bankairim/DirectLens/"))) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Default.Code, null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.github_button))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            InfoCard(title = stringResource(R.string.faq_battery_title), text = stringResource(R.string.faq_battery_text), icon = Icons.Default.BatteryChargingFull)
+            Spacer(modifier = Modifier.height(12.dp))
+            InfoCard(title = stringResource(R.string.faq_privacy_title), text = stringResource(R.string.faq_privacy_text), icon = Icons.Default.Security)
+            Spacer(modifier = Modifier.height(12.dp))
+            InfoCard(title = stringResource(R.string.faq_disclaimer_title), text = stringResource(R.string.faq_disclaimer_text), icon = Icons.Default.Gavel)
+            Spacer(modifier = Modifier.height(12.dp))
+            InfoCard(title = stringResource(R.string.faq_opensource_title), text = stringResource(R.string.faq_opensource_text), icon = Icons.Default.Public)
+            
+            Spacer(modifier = Modifier.height(48.dp))
+            
+            // FOOTER AVEC COPYRIGHT DYNAMIQUE
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Image(painterResource(R.drawable.title), null, modifier = Modifier.height(20.dp).alpha(0.4f), contentScale = ContentScale.Fit)
+                Text(
+                    text = "© 2026 - $currentYear Asanoha Labs",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+fun InfoCard(title: String, text: String, icon: ImageVector) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(modifier = Modifier.padding(16.dp)) {
+            Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+                Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
 }

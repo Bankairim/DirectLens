@@ -32,4 +32,16 @@
     <string name="pos_y">Y 轴偏移</string>
     <string name="delete_zone">删除</string>
     <string name="reset_confirm">重置设置？</string>
+
+    <!-- About & FAQ -->
+    <string name="about_header">关于</string>
+    <string name="faq_battery_title">电池与性能</string>
+    <string name="faq_battery_text">DirectLens 的设计极为轻量。它只在您触摸检测区域时唤醒，几乎不消耗电池电量。</string>
+    <string name="faq_privacy_title">隐私与数据</string>
+    <string name="faq_privacy_text">DirectLens 绝对不收集任何个人数据。屏幕截图在您的设备上本地获取，并直接传递给官方 Google 应用程序。我们不使用任何远程服务器，也没有任何跟踪机制。</string>
+    <string name="faq_disclaimer_title">法律免责声明</string>
+    <string name="faq_disclaimer_text">DirectLens 是一个独立的开源项目。它与 Google LLC 没有任何附属、授权、维护、赞助或认可关系。\"Google Lens\" 是 Google LLC 的商标。一旦图像被转发到 Google 应用程序，该图像及其随后的处理将受 Google 自身的服务条款和隐私政策约束。</string>
+    <string name="faq_opensource_title">开源</string>
+    <string name="faq_opensource_text">DirectLens 是免费且开源的 (GPLv3)。</string>
+    <string name="github_button">在 GitHub 上查看</string>
 </resources>

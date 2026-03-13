@@ -32,4 +32,17 @@
     <string name="pos_y">Y Offset</string>
     <string name="delete_zone">Delete</string>
     <string name="reset_confirm">Reset settings?</string>
+
+    <!-- About & FAQ -->
+    <string name="about_header">Information</string>
+    <string name="faq_battery_title">Battery &amp; Performance</string>
+    <string name="faq_battery_text">DirectLens is designed to be ultra-lightweight. It only wakes up when you touch the detection zone and consumes virtually zero battery.</string>
+    <string name="faq_privacy_title">Privacy &amp; Data</string>
+    <string name="faq_privacy_text">DirectLens collects absolutely zero personal data. Screenshots are captured locally on your device and passed directly to the official Google app. We use no remote servers and have no tracking mechanisms.</string>
+    <string name="faq_disclaimer_title">Legal Disclaimer</string>
+    <string name="faq_disclaimer_text">DirectLens is an independent, open-source project. It is not affiliated with, authorized, maintained, sponsored, or endorsed by Google LLC. \"Google Lens\" is a trademark of Google LLC. Once an image is forwarded to the Google app, Google\'s own Terms of Service and Privacy Policy apply to that image and its subsequent processing.</string>
+    <string name="faq_opensource_title">Open Source</string>
+    <string name="faq_opensource_text">DirectLens is free and open source (GPLv3).</string>
+
+    <string name="github_button">View on GitHub</string>
 </resources>
