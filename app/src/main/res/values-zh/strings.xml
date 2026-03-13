@@ -43,6 +43,11 @@
     <string name="faq_disclaimer_text">DirectLens 是一个独立的开源项目。它与 Google LLC 没有任何附属、授权、维护、赞助或认可关系。\"Google Lens\" 是 Google LLC 的商标。一旦图像被转发到 Google 应用程序，该图像及其随后的处理将受 Google 自身的服务条款和隐私政策约束。</string>
     <string name="faq_opensource_title">开源</string>
     <string name="faq_opensource_text">DirectLens 是免费且开源的 (GPLv3)。此应用程序不需要 root 权限。</string>
+
     <string name="github_button">在 GitHub 上查看</string>
     <string name="donate_button">☕ 在 PayPal 上支持我</string>
+
+    <string name="rate_title">喜欢这个应用吗？</string>
+    <string name="rate_text">支持独立开发者！您的五星好评比您想象的更有帮助。</string>
+    <string name="rate_button">给五星好评</string>
 </resources>

@@ -168,31 +168,40 @@ fun MainSettingsScreen() {
             Spacer(modifier = Modifier.height(16.dp))
             Text(stringResource(R.string.welcome_text).substringBefore("\n\n"), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/banka89"))) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
-            ) {
-                Text(stringResource(R.string.donate_button))
-            }
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // 1. Service Switch
-            SettingsToggleItem(
-                title = stringResource(R.string.service_active),
-                subtitle = if (masterEnabled) stringResource(R.string.service_active_sub) else stringResource(R.string.service_hidden_sub),
-                icon = Icons.Default.PowerSettingsNew,
-                checked = masterEnabled,
-                onCheckedChange = {
-                    masterEnabled = it
-                    prefs.edit().putBoolean("master_enabled", it).apply()
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(
+                    onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/banka89"))) },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
+                ) {
+                    Text(stringResource(R.string.donate_button), maxLines = 1)
                 }
-            )
+                
+                Button(
+                    onClick = { 
+                        val packageName = context.packageName
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+                        } catch (e: Exception) {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
+                ) {
+                    Icon(Icons.Default.Star, null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.rate_button), maxLines = 1)
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Permission Warning
+            // Permission Warning (Shown if accessibility is disabled)
             if (!isAccessibilityEnabled) {
-                Spacer(modifier = Modifier.height(12.dp))
                 Card(
                     onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
@@ -206,6 +215,49 @@ fun MainSettingsScreen() {
                             Text(stringResource(R.string.service_disabled), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onErrorContainer)
                             Text(stringResource(R.string.service_disabled_sub), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f))
                         }
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            } else {
+                // 1. Service Switch (Only shown if accessibility is enabled)
+                SettingsToggleItem(
+                    title = stringResource(R.string.service_active),
+                    subtitle = if (masterEnabled) stringResource(R.string.service_active_sub) else stringResource(R.string.service_hidden_sub),
+                    icon = Icons.Default.PowerSettingsNew,
+                    checked = masterEnabled,
+                    onCheckedChange = {
+                        masterEnabled = it
+                        prefs.edit().putBoolean("master_enabled", it).apply()
+                    }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            
+            // Rate Us Card
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.rate_title), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.rate_text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f))
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    IconButton(
+                        onClick = {
+                            val packageName = context.packageName
+                            try {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+                            } catch (e: Exception) {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+                            }
+                        },
+                        colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.tertiary, contentColor = MaterialTheme.colorScheme.onTertiary),
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(Icons.Default.ThumbUp, null)
                     }
                 }
             }
