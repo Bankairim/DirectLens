@@ -19,6 +19,11 @@
     <string name="haptic_strength">Trillingsintensiteit</string>
     <string name="haptic_desc">Pas de kracht van de \"Charging Up\" en de uiteindelijke klik aan.</string>
 
+    <!-- Visual Effects -->
+    <string name="visual_header">Visuele Effecten</string>
+    <string name="rainbow_flash">Regenboog Flash</string>
+    <string name="rainbow_flash_desc">Toon een subtiele Google-gekleurde animatie bij activatie.</string>
+
     <!-- Overlay Zones -->
     <string name="zones_header">Detectiezones</string>
     <string name="add_zone">Zone toevoegen</string>

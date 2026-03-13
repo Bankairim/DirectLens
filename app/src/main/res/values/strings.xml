@@ -19,6 +19,11 @@
     <string name="haptic_strength">Buzz intensity</string>
     <string name="haptic_desc">Adjust the power of the \"Charging Up\" and final click.</string>
 
+    <!-- Visual Effects -->
+    <string name="visual_header">Visual Effects</string>
+    <string name="rainbow_flash">Rainbow Flash</string>
+    <string name="rainbow_flash_desc">Show a subtle Google-colored animation on trigger.</string>
+
     <!-- Overlay Zones -->
     <string name="zones_header">Detection Zones</string>
     <string name="add_zone">Add a zone</string>

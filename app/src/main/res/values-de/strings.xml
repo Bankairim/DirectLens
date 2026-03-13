@@ -19,6 +19,11 @@
     <string name="haptic_strength">Vibrationsintensität</string>
     <string name="haptic_desc">Passen Sie die Stärke des \"Charging Up\" und des finalen Klicks an.</string>
 
+    <!-- Visual Effects -->
+    <string name="visual_header">Visuelle Effekte</string>
+    <string name="rainbow_flash">Regenbogen-Flash</string>
+    <string name="rainbow_flash_desc">Zeigen Sie beim Auslösen eine dezente Google-farbige Animation an.</string>
+
     <!-- Overlay Zones -->
     <string name="zones_header">Erkennungszonen</string>
     <string name="add_zone">Zone hinzufügen</string>

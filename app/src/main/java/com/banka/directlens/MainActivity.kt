@@ -91,6 +91,7 @@ fun MainSettingsScreen() {
     var isAccessibilityEnabled by remember { mutableStateOf(isAccessibilityServiceEnabled(context)) }
     var masterEnabled by remember { mutableStateOf(prefs.getBoolean("master_enabled", true)) }
     var hapticStrength by remember { mutableIntStateOf(prefs.getInt("haptic_strength", 50)) }
+    var rainbowFlashEnabled by remember { mutableStateOf(prefs.getBoolean("rainbow_flash_enabled", true)) }
     var config by remember { mutableStateOf(configManager.getConfig()) }
     var showWelcomeDialog by remember { mutableStateOf(prefs.getBoolean("first_launch", true)) }
 
@@ -155,7 +156,8 @@ fun MainSettingsScreen() {
                         configManager.resetConfig()
                         updateConfig(configManager.getConfig())
                         hapticStrength = 50
-                        prefs.edit().putInt("haptic_strength", 50).apply()
+                        rainbowFlashEnabled = true
+                        prefs.edit().putInt("haptic_strength", 50).putBoolean("rainbow_flash_enabled", true).apply()
                     }) { Icon(Icons.Default.Refresh, contentDescription = "Reset") }
                 }
             )
@@ -264,7 +266,22 @@ fun MainSettingsScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 2. Haptique HD
+            // 2. Visual Effects
+            SettingsSectionHeader(title = stringResource(R.string.visual_header))
+            SettingsToggleItem(
+                title = stringResource(R.string.rainbow_flash),
+                subtitle = stringResource(R.string.rainbow_flash_desc),
+                icon = Icons.Default.Palette,
+                checked = rainbowFlashEnabled,
+                onCheckedChange = {
+                    rainbowFlashEnabled = it
+                    prefs.edit().putBoolean("rainbow_flash_enabled", it).apply()
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 3. Haptique HD
             SettingsSectionHeader(title = stringResource(R.string.haptic_header))
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
@@ -283,7 +300,7 @@ fun MainSettingsScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 3. Zones de détection
+            // 4. Zones de détection
             Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.zones_header).uppercase(), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp), color = MaterialTheme.colorScheme.primary)
                 Switch(checked = config.isVisible, onCheckedChange = { updateConfig(config.copy(isVisible = it)) }, thumbContent = { Icon(Icons.Default.Visibility, null, modifier = Modifier.size(12.dp)) })
@@ -292,7 +309,7 @@ fun MainSettingsScreen() {
                 SegmentEditorItem(index = index, segment = segment, isExpanded = config.activeSegmentIndex == index, onExpandToggle = { updateConfig(config.copy(activeSegmentIndex = if (config.activeSegmentIndex == index) -1 else index)) }, onUpdate = { updated -> val newSegments = config.segments.toMutableList(); newSegments[index] = updated; updateConfig(config.copy(segments = newSegments)) }, onDelete = { val newSegments = config.segments.toMutableList(); newSegments.removeAt(index); updateConfig(config.copy(segments = newSegments, activeSegmentIndex = -1)) })
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            if (masterEnabled) {
+            if (masterEnabled && isAccessibilityEnabled) {
                 Button(onClick = { val currentSegments = config.segments.toMutableList(); val metrics = context.resources.displayMetrics; currentSegments.add(OverlaySegment(yOffset = metrics.heightPixels - 200)); updateConfig(config.copy(segments = currentSegments)) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Icon(Icons.Default.Add, null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -302,7 +319,7 @@ fun MainSettingsScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 4. SECTION INFORMATIONS (FAQ & GITHUB)
+            // 5. SECTION INFORMATIONS (FAQ & GITHUB)
             SettingsSectionHeader(title = stringResource(R.string.about_header))
             
             // GitHub Button

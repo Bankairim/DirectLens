@@ -28,7 +28,7 @@
         <!-- Activité de déclenchement : Totalement indépendante et invisible -->
         <activity
             android:name=".TrampolineActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:theme="@style/Theme.Transparent"
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:launchMode="singleInstance"

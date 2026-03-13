@@ -19,6 +19,11 @@
     <string name="haptic_strength">Intensité du bourdonnement</string>
     <string name="haptic_desc">Ajustez la puissance du \"Charging Up\" et du clic final.</string>
 
+    <!-- Visual Effects -->
+    <string name="visual_header">Effets Visuels</string>
+    <string name="rainbow_flash">Flash Arc-en-ciel</string>
+    <string name="rainbow_flash_desc">Affiche une animation discrète aux couleurs de Google lors du déclenchement.</string>
+
     <!-- Overlay Zones -->
     <string name="zones_header">Zones de Détection</string>
     <string name="add_zone">Ajouter une zone</string>

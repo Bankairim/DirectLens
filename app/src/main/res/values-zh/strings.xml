@@ -19,6 +19,11 @@
     <string name="haptic_strength">震动强度</string>
     <string name="haptic_desc">调整 \"预热\" (Charging Up) 和最终点击的力度。</string>
 
+    <!-- Visual Effects -->
+    <string name="visual_header">视觉效果</string>
+    <string name="rainbow_flash">彩虹闪烁</string>
+    <string name="rainbow_flash_desc">触发时显示细微的 Google 配色动画。</string>
+
     <!-- Overlay Zones -->
     <string name="zones_header">检测区域</string>
     <string name="add_zone">添加区域</string>
