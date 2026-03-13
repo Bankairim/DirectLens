@@ -14,7 +14,7 @@ Start Google Lens direct door lang op je navigatiebalk te drukken, met een premi
 ## 📥 Download
 Je kunt de nieuwste versie van de APK rechtstreeks van GitHub downloaden:
 
-**[👉 Download de nieuwste APK](https://github.com/Bankairim/DirectLens/releases/latest/download/app-release.apk)**
+**[👉 Download de nieuwste APK](https://github.com/Bankairim/DirectLens/releases/latest)**
 
 ---
 

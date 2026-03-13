@@ -14,7 +14,7 @@ Lancez Google Lens instantanément d'un simple appui long sur votre barre de nav
 ## 📥 Téléchargement
 Vous pouvez télécharger la dernière version de l'APK directement sur GitHub :
 
-**[👉 Télécharger le dernier APK](https://github.com/Bankairim/DirectLens/releases/latest/download/app-release.apk)**
+**[👉 Télécharger le dernier APK](https://github.com/Bankairim/DirectLens/releases/latest)**
 
 ---
 

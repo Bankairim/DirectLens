@@ -14,7 +14,7 @@
 ## 📥 下载
 您可以直接从 GitHub 下载最新版本的 APK：
 
-**[👉 下载最新 APK](https://github.com/Bankairim/DirectLens/releases/latest/download/app-release.apk)**
+**[👉 下载最新 APK](https://github.com/Bankairim/DirectLens/releases/latest)**
 
 ---
 
