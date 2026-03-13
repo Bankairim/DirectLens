@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">DirectLens</string>
+    <string name="accessibility_service_description">通过长按导航栏快速访问 Google Lens。</string>
+
+    <!-- Welcome Dialog -->
+    <string name="welcome_title">欢迎使用 DirectLens</string>
+    <string name="welcome_text">DirectLens 是适用于所有 Android 智能手机 (v11+) 的 \"圈选即搜\" (Circle to Search) 超轻量级替代方案。\n\n启用无障碍服务，通过简单的长按导航栏即可启动 Google Lens。</string>
+    <string name="welcome_button">开始使用！</string>
+
+    <!-- Main Screen -->
+    <string name="service_disabled">服务已禁用</string>
+    <string name="service_disabled_sub">点击以启用无障碍服务。</string>
+    <string name="service_active">DirectLens 服务已启用</string>
+    <string name="service_active_sub">叠加层已激活</string>
+    <string name="service_hidden_sub">叠加层已隐藏</string>
+
+    <!-- Haptics -->
+    <string name="haptic_header">HD 触感反馈</string>
+    <string name="haptic_strength">震动强度</string>
+    <string name="haptic_desc">调整 \"预热\" (Charging Up) 和最终点击的力度。</string>
+
+    <!-- Overlay Zones -->
+    <string name="zones_header">检测区域</string>
+    <string name="add_zone">添加区域</string>
+    <string name="zone_label">区域 #%1$d</string>
+    <string name="show_zones">显示区域</string>
+
+    <!-- Editor -->
+    <string name="dim_width">宽度</string>
+    <string name="dim_height">高度</string>
+    <string name="pos_x">X 轴偏移</string>
+    <string name="pos_y">Y 轴偏移</string>
+    <string name="delete_zone">删除</string>
+    <string name="reset_confirm">重置设置？</string>
+</resources>

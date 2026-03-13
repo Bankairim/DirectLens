@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">DirectLens</string>
+    <string name="accessibility_service_description">Accès rapide à Google Lens par appui long sur votre barre de navigation.</string>
+
+    <!-- Welcome Dialog -->
+    <string name="welcome_title">Bienvenue sur DirectLens</string>
+    <string name="welcome_text">DirectLens est l\'alternative ultra-légère à \"Circle to Search\" pour tous les smartphones Android (v11+).\n\nActivez le service d\'accessibilité pour lancer Google Lens d\'un simple appui long sur votre barre de navigation.</string>
+    <string name="welcome_button">C\'est parti !</string>
+
+    <!-- Main Screen -->
+    <string name="service_disabled">Service désactivé</string>
+    <string name="service_disabled_sub">Cliquez pour activer l\'accessibilité.</string>
+    <string name="service_active">Service DirectLens Actif</string>
+    <string name="service_active_sub">L\'overlay est actif</string>
+    <string name="service_hidden_sub">L\'overlay est masqué</string>
+
+    <!-- Haptics -->
+    <string name="haptic_header">Retour Haptique HD</string>
+    <string name="haptic_strength">Intensité du bourdonnement</string>
+    <string name="haptic_desc">Ajustez la puissance du \"Charging Up\" et du clic final.</string>
+
+    <!-- Overlay Zones -->
+    <string name="zones_header">Zones de Détection</string>
+    <string name="add_zone">Ajouter une zone</string>
+    <string name="zone_label">Zone n°%1$d</string>
+    <string name="show_zones">Afficher les zones</string>
+
+    <!-- Editor -->
+    <string name="dim_width">Largeur</string>
+    <string name="dim_height">Hauteur</string>
+    <string name="pos_x">Position X</string>
+    <string name="pos_y">Position Y</string>
+    <string name="delete_zone">Supprimer</string>
+    <string name="reset_confirm">Réinitialiser les paramètres ?</string>
+</resources>

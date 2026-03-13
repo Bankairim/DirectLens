@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">DirectLens</string>
+    <string name="accessibility_service_description">Snelle toegang tot Google Lens door lang te drukken op je navigatiebalk.</string>
+
+    <!-- Welcome Dialog -->
+    <string name="welcome_title">Welkom bij DirectLens</string>
+    <string name="welcome_text">DirectLens is het ultralichte alternatief voor \"Circle to Search\" voor alle Android-smartphones (v11+).\n\nSchakel de toegankelijkheidsservice in om Google Lens te starten met een simpele lange druk op je navigatiebalk.</string>
+    <string name="welcome_button">Laten we gaan!</string>
+
+    <!-- Main Screen -->
+    <string name="service_disabled">Service uitgeschakeld</string>
+    <string name="service_disabled_sub">Klik om toegankelijkheid in te schakelen.</string>
+    <string name="service_active">DirectLens Service Actief</string>
+    <string name="service_active_sub">Overlay is actief</string>
+    <string name="service_hidden_sub">Overlay is verborgen</string>
+
+    <!-- Haptics -->
+    <string name="haptic_header">HD Haptische Feedback</string>
+    <string name="haptic_strength">Trillingsintensiteit</string>
+    <string name="haptic_desc">Pas de kracht van de \"Charging Up\" en de uiteindelijke klik aan.</string>
+
+    <!-- Overlay Zones -->
+    <string name="zones_header">Detectiezones</string>
+    <string name="add_zone">Zone toevoegen</string>
+    <string name="zone_label">Zone #%1$d</string>
+    <string name="show_zones">Zones tonen</string>
+
+    <!-- Editor -->
+    <string name="dim_width">Breedte</string>
+    <string name="dim_height">Hoogte</string>
+    <string name="pos_x">X-verschuiving</string>
+    <string name="pos_y">Y-verschuiving</string>
+    <string name="delete_zone">Verwijderen</string>
+    <string name="reset_confirm">Instellingen herstellen?</string>
+</resources>

@@ -1,0 +1,244 @@
+package com.banka.directlens
+
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.GestureDescription
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Path
+import android.graphics.PixelFormat
+import android.graphics.drawable.GradientDrawable
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.view.Display
+import android.view.GestureDetector
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+
+class DirectLensService : AccessibilityService() {
+
+    private var windowManager: WindowManager? = null
+    private val overlayViews = mutableListOf<View>()
+    private val executor: Executor = Executors.newSingleThreadExecutor()
+    private lateinit var configManager: OverlayConfigurationManager
+    private val prefs: SharedPreferences by lazy { getSharedPreferences("directlens_prefs", Context.MODE_PRIVATE) }
+
+    private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key -> 
+        if (key == "overlay_config" || key == "master_enabled") updateOverlay() 
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        configManager = OverlayConfigurationManager(this)
+        prefs.registerOnSharedPreferenceChangeListener(prefsListener)
+        updateOverlay()
+    }
+
+    private fun updateOverlay() {
+        Handler(Looper.getMainLooper()).post {
+            val config = configManager.getConfig()
+            val masterEnabled = prefs.getBoolean("master_enabled", true)
+
+            overlayViews.forEach { try { windowManager?.removeView(it) } catch (e: Exception) {} }
+            overlayViews.clear()
+
+            if (!masterEnabled || !config.isEnabled) return@post
+
+            config.segments.forEachIndexed { index, segment ->
+                val view = View(this)
+                val params = WindowManager.LayoutParams(
+                    if (segment.width <= 0) resources.displayMetrics.widthPixels else segment.width,
+                    segment.height,
+                    WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    PixelFormat.TRANSLUCENT
+                )
+
+                params.gravity = Gravity.TOP or Gravity.START
+                params.x = segment.xOffset
+                params.y = segment.yOffset
+
+                if (config.isVisible) {
+                    val colors = listOf(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW, Color.MAGENTA)
+                    val color = colors[index % colors.size]
+                    val drawable = GradientDrawable().apply {
+                        setColor(Color.argb(100, Color.red(color), Color.green(color), Color.blue(color)))
+                        if (index == config.activeSegmentIndex) setStroke(5, Color.WHITE)
+                    }
+                    view.background = drawable
+                } else {
+                    view.setBackgroundColor(Color.TRANSPARENT)
+                }
+
+                attachTouchListener(view, segment)
+
+                try {
+                    windowManager?.addView(view, params)
+                    overlayViews.add(view)
+                } catch (e: Exception) { e.printStackTrace() }
+            }
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun attachTouchListener(view: View, segment: OverlaySegment) {
+        val handler = Handler(Looper.getMainLooper())
+        var isTouching = false
+        var hasTriggered = false
+        var startX = 0f
+        var startY = 0f
+
+        val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                if (segment.gestures[GestureType.SINGLE_TAP] == ActionType.CTS_LENS) { executeAction(); return true }
+                propagateSingleTap(view, e.rawX, e.rawY)
+                return false
+            }
+            override fun onDoubleTap(e: MotionEvent): Boolean {
+                if (segment.gestures[GestureType.DOUBLE_TAP] == ActionType.CTS_LENS) { executeAction(); return true }
+                return false
+            }
+        })
+
+        // --- MOTEUR HD BOURDONNEMENT (PIXEL-LIKE) ---
+        val startVibrationRunnable = Runnable {
+            val hapticStrength = prefs.getInt("haptic_strength", 50)
+            if (!isTouching || hasTriggered || hapticStrength == 0) return@Runnable
+
+            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            val mult = (hapticStrength / 50f)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    val composition = VibrationEffect.startComposition()
+                    // On fait 25 ticks très rapprochés pour créer un "bourdonnement" granulaire
+                    val numTicks = 25 
+                    for (i in 0 until numTicks) {
+                        // Courbe exponentielle pour le frisson qui monte
+                        val progress = i.toFloat() / (numTicks - 1)
+                        val scale = (0.05f + (0.35f * progress * progress)) * mult
+                        composition.addPrimitive(VibrationEffect.Composition.PRIMITIVE_LOW_TICK, scale.coerceIn(0.01f, 1.0f), 15)
+                    }
+                    vibrator.vibrate(composition.compose())
+                    return@Runnable
+                } catch (e: Exception) {}
+            }
+
+            // Fallback waveform pour un bourdonnement physique
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && vibrator.hasAmplitudeControl()) {
+                val timings = LongArray(30) { 15L }
+                val amplitudes = IntArray(30) { i -> 
+                    ((10 + (i * 8 * mult)).toInt()).coerceIn(1, 255)
+                }
+                vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+            }
+        }
+
+        val triggerRunnable = Runnable {
+            if (!isTouching || hasTriggered) return@Runnable
+            hasTriggered = true
+            (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
+            if (segment.gestures[GestureType.LONG_PRESS] == ActionType.CTS_LENS) executeAction()
+        }
+
+        view.setOnTouchListener { _, event ->
+            if (segment.gestures[GestureType.LONG_PRESS] == ActionType.CTS_LENS) {
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        isTouching = true; hasTriggered = false; startX = event.rawX; startY = event.rawY
+                        handler.postDelayed(startVibrationRunnable, 50) // Démarrage quasi immédiat
+                        handler.postDelayed(triggerRunnable, 500) // Seuil de déclenchement (500ms)
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        if (Math.abs(event.rawX - startX) > 60 || Math.abs(event.rawY - startY) > 60) {
+                            isTouching = false; handler.removeCallbacks(startVibrationRunnable); handler.removeCallbacks(triggerRunnable)
+                            (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
+                        }
+                    }
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        isTouching = false; handler.removeCallbacks(startVibrationRunnable); handler.removeCallbacks(triggerRunnable)
+                        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
+                    }
+                }
+            }
+            gestureDetector.onTouchEvent(event)
+            true
+        }
+    }
+
+    private fun executeAction() {
+        val hapticStrength = prefs.getInt("haptic_strength", 50)
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        
+        // Clic final sec et puissant
+        if (hapticStrength > 0) {
+            val amp = (hapticStrength * 2.55f).toInt().coerceIn(1, 255)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(40, amp))
+            } else {
+                vibrator.vibrate(40)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            takeScreenshot(Display.DEFAULT_DISPLAY, executor, object : TakeScreenshotCallback {
+                override fun onSuccess(result: ScreenshotResult) {
+                    val hwBuffer = result.hardwareBuffer
+                    val bitmap = Bitmap.wrapHardwareBuffer(hwBuffer, result.colorSpace)?.copy(Bitmap.Config.ARGB_8888, false)
+                    hwBuffer.close()
+                    if (bitmap != null) {
+                        BitmapCache.bitmap = bitmap
+                        startActivity(Intent(this@DirectLensService, TrampolineActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                        })
+                    }
+                }
+                override fun onFailure(errorCode: Int) {}
+            })
+        }
+    }
+
+    private fun propagateSingleTap(view: View, x: Float, y: Float) {
+        val params = view.layoutParams as WindowManager.LayoutParams
+        val originalFlags = params.flags
+        params.flags = params.flags or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        try { windowManager?.updateViewLayout(view, params) } catch (e: Exception) {}
+
+        val path = Path().apply { moveTo(x, y) }
+        val stroke = GestureDescription.StrokeDescription(path, 0, 50)
+        val gesture = GestureDescription.Builder().addStroke(stroke).build()
+
+        dispatchGesture(gesture, object : GestureResultCallback() {
+            override fun onCompleted(gestureDescription: GestureDescription?) { restoreFlags() }
+            override fun onCancelled(gestureDescription: GestureDescription?) { restoreFlags() }
+            fun restoreFlags() {
+                Handler(Looper.getMainLooper()).postDelayed({
+                    params.flags = originalFlags
+                    try { windowManager?.updateViewLayout(view, params) } catch (e: Exception) {}
+                }, 50)
+            }
+        }, null)
+    }
+
+    override fun onAccessibilityEvent(event: android.view.accessibility.AccessibilityEvent?) {}
+    override fun onInterrupt() {}
+    override fun onDestroy() {
+        super.onDestroy()
+        prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
+        overlayViews.forEach { try { windowManager?.removeView(it) } catch (e: Exception) {} }
+    }
+}
