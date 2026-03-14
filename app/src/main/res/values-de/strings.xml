@@ -7,6 +7,10 @@
     <string name="welcome_text">DirectLens ist die ultraleichte Alternative zu \"Circle to Search\" für alle Android-Smartphones (v11+).\n\nAktivieren Sie den Bedienungshilfen-Dienst, um Google Lens mit einem einfachen langen Druck auf Ihre Navigationsleiste zu starten.</string>
     <string name="welcome_button">Los geht\'s!</string>
 
+    <!-- Accessibility Disclosure (Required by Google Play) -->
+    <string name="disclosure_title">Verwendung des Bedienungshilfen-Dienstes</string>
+    <string name="disclosure_text">DirectLens verwendet die Accessibility Service API, um Ihre Gesten (langes Drücken der Navigationsleiste) zu erkennen und einen Screenshot auszulösen.\n\n- Es werden keine persönlichen Daten gesammelt oder weitergegeben.\n- Screenshots werden lokal verarbeitet und direkt an Google Lens weitergeleitet.\n- Es werden keine Daten auf Remote-Servern gespeichert oder an diese übertragen.</string>
+
     <!-- Main Screen -->
     <string name="service_disabled">Dienst deaktiviert</string>
     <string name="service_disabled_sub">Klicken, um Bedienungshilfen zu aktivieren.</string>

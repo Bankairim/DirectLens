@@ -7,6 +7,10 @@
     <string name="welcome_text">DirectLens is het ultralichte alternatief voor \"Circle to Search\" voor alle Android-smartphones (v11+).\n\nSchakel de toegankelijkheidsservice in om Google Lens te starten met een simpele lange druk op je navigatiebalk.</string>
     <string name="welcome_button">Laten we gaan!</string>
 
+    <!-- Accessibility Disclosure (Required by Google Play) -->
+    <string name="disclosure_title">Gebruik van toegankelijkheidsservice</string>
+    <string name="disclosure_text">DirectLens gebruikt de Accessibility Service API om je gebaren te detecteren (lang drukken op de navigatiebalk) en een screenshot te maken.\n\n- Er worden geen persoonlijke gegevens verzameld of gedeeld.\n- Screenshots worden lokaal verwerkt en rechtstreeks naar Google Lens doorgestuurd.\n- Er worden geen gegevens opgeslagen of verzonden naar externe servers.</string>
+
     <!-- Main Screen -->
     <string name="service_disabled">Service uitgeschakeld</string>
     <string name="service_disabled_sub">Klik om toegankelijkheid in te schakelen.</string>

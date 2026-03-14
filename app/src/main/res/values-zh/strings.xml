@@ -7,6 +7,10 @@
     <string name="welcome_text">DirectLens 是适用于所有 Android 智能手机 (v11+) 的 \"圈选即搜\" (Circle to Search) 超轻量级替代方案。\n\n启用无障碍服务，通过简单的长按导航栏即可启动 Google Lens。</string>
     <string name="welcome_button">开始使用！</string>
 
+    <!-- Accessibility Disclosure (Required by Google Play) -->
+    <string name="disclosure_title">无障碍服务使用说明</string>
+    <string name="disclosure_text">DirectLens 使用无障碍服务 API 来检测您的手势（长按导航栏）并触发屏幕截图。\n\n- 不会收集或共享任何个人数据。\n- 屏幕截图在本地处理并直接传递给 Google Lens。\n- 不会将任何数据存储或传输到远程服务器。</string>
+
     <!-- Main Screen -->
     <string name="service_disabled">服务已禁用</string>
     <string name="service_disabled_sub">点击以启用无障碍服务。</string>

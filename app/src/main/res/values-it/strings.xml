@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">DirectLens</string>
+    <string name="accessibility_service_description">Accesso rapido a Google Lens premendo a lungo sulla barra di navigazione.</string>
+
+    <!-- Welcome Dialog -->
+    <string name="welcome_title">Benvenuto su DirectLens</string>
+    <string name="welcome_text">DirectLens è l\'alternativa ultra-leggera a \"Circle to Search\" per tutti gli smartphone Android (v11+).\n\nAttiva il servizio di accessibilità per lanciare Google Lens con una semplice pressione prolungata sulla barra di navigazione.</string>
+    <string name="welcome_button">Andiamo!</string>
+
+    <!-- Accessibility Disclosure (Required by Google Play) -->
+    <string name="disclosure_title">Utilizzo del Servizio di Accessibilità</string>
+    <string name="disclosure_text">DirectLens utilizza l\'API del Servizio di Accessibilità per rilevare i tuoi gesti (pressione prolungata sulla barra di navigazione) e attivare uno screenshot.\n\n- Nessun dato personale viene raccolto o condiviso.\n- Gli screenshot vengono elaborati localmente e inviati direttamente a Google Lens.\n- Nessun dato viene memorizzato o trasmesso a server remoti.</string>
+
+    <!-- Main Screen -->
+    <string name="service_disabled">Servizio disabilitato</string>
+    <string name="service_disabled_sub">Clicca per attivare l\'accessibilità.</string>
+    <string name="service_active">Servizio DirectLens Attivo</string>
+    <string name="service_active_sub">L\'overlay è attivo</string>
+    <string name="service_hidden_sub">L\'overlay è nascosto</string>
+
+    <!-- Haptics -->
+    <string name="haptic_header">Feedback aptico HD</string>
+    <string name="haptic_strength">Intensità vibrazione</string>
+    <string name="haptic_desc">Regola la potenza del \"Charging Up\" e del clic finale.</string>
+
+    <!-- Visual Effects -->
+    <string name="visual_header">Effetti visivi</string>
+    <string name="rainbow_flash">Flash arcobaleno</string>
+    <string name="rainbow_flash_desc">Mostra una sottile animazione con i colori di Google all\'attivazione.</string>
+
+    <!-- Overlay Zones -->
+    <string name="zones_header">Zone di rilevamento</string>
+    <string name="add_zone">Aggiungi una zona</string>
+    <string name="zone_label">Zona #%1$d</string>
+    <string name="show_zones">Mostra zone</string>
+
+    <!-- Editor -->
+    <string name="dim_width">Larghezza</string>
+    <string name="dim_height">Altezza</string>
+    <string name="pos_x">Offset X</string>
+    <string name="pos_y">Offset Y</string>
+    <string name="delete_zone">Elimina</string>
+    <string name="reset_confirm">Ripristinare le impostazioni?</string>
+
+    <!-- About & FAQ -->
+    <string name="about_header">Informazioni</string>
+    <string name="faq_battery_title">Batteria e prestazioni</string>
+    <string name="faq_battery_text">DirectLens è progettato per essere ultra-leggero. Si attiva solo quando tocchi la zona di rilevamento e consuma praticamente zero batteria.</string>
+    <string name="faq_privacy_title">Privacy e dati</string>
+    <string name="faq_privacy_text">DirectLens non raccoglie assolutamente alcun dato personale. Gli screenshot vengono acquisiti localmente sul dispositivo e passati direttamente all\'app ufficiale di Google. Non utilizziamo server remoti e non abbiamo meccanismi di tracciamento.</string>
+    <string name="faq_disclaimer_title">Dichiarazione di non responsabilità</string>
+    <string name="faq_disclaimer_text">DirectLens è un progetto indipendente e open-source. Non è affiliato, autorizzato, mantenuto, sponsorizzato o approvato da Google LLC. \"Google Lens\" è un marchio di Google LLC. Una volta che un\'immagine viene inoltrata all\'app Google, si applicano i Termini di servizio e l\'Informativa sulla privacy di Google.</string>
+    <string name="faq_opensource_title">Open Source</string>
+    <string name="faq_opensource_text">DirectLens è gratuito e open source (GPLv3). Questa applicazione non richiede il root.</string>
+
+    <string name="github_button">Visualizza su GitHub</string>
+    <string name="donate_button">☕ Sostieni su PayPal</string>
+
+    <string name="rate_title">Ti piace questa app?</string>
+    <string name="rate_text">Sostieni uno sviluppatore indipendente! Una recensione a 5 stelle aiuta più di quanto pensi.</string>
+    <string name="rate_button">Valuta con 5 stelle</string>
+</resources>
