@@ -8,6 +8,7 @@ package com.banka.directlens
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.provider.Settings
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -28,6 +29,7 @@ data class OverlaySegment(
     val height: Int = 150,
     val xOffset: Int = 0,
     val yOffset: Int = 0,
+    val isEnabled: Boolean = true,
     val gestures: Map<GestureType, ActionType> = mapOf(GestureType.LONG_PRESS to ActionType.CTS_LENS),
     val gestureData: Map<GestureType, String> = emptyMap()
 )
@@ -44,30 +46,38 @@ class OverlayConfigurationManager(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("directlens_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
-    // LE GÉNÉRATEUR ADAPTATIF MATHÉMATIQUE (Pixel-like)
     fun getDefaultConfig(): OverlayConfig {
         val metrics = context.resources.displayMetrics
         val screenWidth = metrics.widthPixels
         val screenHeight = metrics.heightPixels
 
-        // 28% de la largeur de l'écran pour la "pilule" de détection
-        val w = (screenWidth * 0.28f).toInt()
-        // Hauteur fixe convertie en pixels (40dp)
-        val h = (40f * metrics.density).toInt()
-        // Centrage parfait (X)
-        val x = (screenWidth - w) / 2
-        // Collé en bas (Y) - On laisse un petit offset pour la barre de nav
-        val y = screenHeight - h
+        // Detection du mode de navigation
+        val navMode = Settings.Secure.getInt(context.contentResolver, "navigation_mode", 0)
+        val isGestureMode = navMode == 2
 
-        val defaultSegment = OverlaySegment(
-            width = w,
-            height = h,
-            xOffset = x,
-            yOffset = y,
-            gestures = mapOf(
-                GestureType.LONG_PRESS to ActionType.CTS_LENS,
-                GestureType.SINGLE_TAP to ActionType.NONE
-            )
+        // Zone 1 : Pilule centrale (Optimisée pour Gestes)
+        val w1 = (screenWidth * 0.28f).toInt()
+        val h1 = (40f * metrics.density).toInt()
+        val x1 = (screenWidth - w1) / 2
+        val y1 = screenHeight - h1
+        val centerPill = OverlaySegment(
+            width = w1,
+            height = h1,
+            xOffset = x1,
+            yOffset = y1,
+            isEnabled = isGestureMode,
+            gestures = mapOf(GestureType.LONG_PRESS to ActionType.CTS_LENS)
+        )
+
+        // Zone 2 : Petit cube coin (Optimisée pour Boutons)
+        val cubeSize = 100
+        val cornerCube = OverlaySegment(
+            width = cubeSize,
+            height = cubeSize,
+            xOffset = screenWidth - cubeSize,
+            yOffset = screenHeight - cubeSize,
+            isEnabled = !isGestureMode,
+            gestures = mapOf(GestureType.LONG_PRESS to ActionType.CTS_LENS)
         )
 
         return OverlayConfig(
@@ -75,7 +85,7 @@ class OverlayConfigurationManager(private val context: Context) {
             isEnabledInLandscape = false,
             isVisible = false,
             activeSegmentIndex = -1,
-            segments = listOf(defaultSegment)
+            segments = listOf(centerPill, cornerCube)
         )
     }
 

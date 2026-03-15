@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Activité de déclenchement : Totalement indépendante et invisible -->
+        <!-- Activité de déclenchement : Supporte maintenant l'appui long sur le bouton Home -->
         <activity
             android:name=".TrampolineActivity"
             android:theme="@style/Theme.Transparent"
@@ -33,7 +33,12 @@
             android:taskAffinity=""
             android:launchMode="singleInstance"
             android:noHistory="true"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".DirectLensService"

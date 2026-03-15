@@ -18,6 +18,12 @@
     <string name="service_active_sub">Overlay ist aktiv</string>
     <string name="service_hidden_sub">Overlay ist ausgeblendet</string>
 
+    <!-- Assistant Role -->
+    <string name="assistant_header">Digitaler Assistent</string>
+    <string name="assistant_card_title">Home-Taste verwenden</string>
+    <string name="assistant_card_desc">Wenn Sie die Tastennavigation verwenden, legen Sie DirectLens als Standard-Assistenten fest, um es durch langes Drücken der Home-Taste auszulösen, ohne diese zu blockieren.</string>
+    <string name="assistant_button">Als Standard-Assistent festlegen</string>
+
     <!-- Haptics -->
     <string name="haptic_header">HD-Haptisches Feedback</string>
     <string name="haptic_strength">Vibrationsintensität</string>
@@ -31,6 +37,8 @@
     <!-- Overlay Zones -->
     <string name="zones_header">Erkennungszonen</string>
     <string name="add_zone">Zone hinzufügen</string>
+    <string name="zone_gesture">Gesten-Modus</string>
+    <string name="zone_corner">Untere rechte Ecke</string>
     <string name="zone_label">Zone Nr. %1$d</string>
     <string name="show_zones">Zonen anzeigen</string>
 

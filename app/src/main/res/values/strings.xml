@@ -18,6 +18,12 @@
     <string name="service_active_sub">Overlay is active</string>
     <string name="service_hidden_sub">Overlay is hidden</string>
 
+    <!-- Assistant Role -->
+    <string name="assistant_header">Digital Assistant</string>
+    <string name="assistant_card_title">Use Home Button</string>
+    <string name="assistant_card_desc">If you use button navigation, set DirectLens as your default assistant to trigger it by long-pressing the Home button without blocking it.</string>
+    <string name="assistant_button">Set as Default Assistant</string>
+
     <!-- Haptics -->
     <string name="haptic_header">HD Haptic Feedback</string>
     <string name="haptic_strength">Buzz intensity</string>
@@ -31,6 +37,8 @@
     <!-- Overlay Zones -->
     <string name="zones_header">Detection Zones</string>
     <string name="add_zone">Add a zone</string>
+    <string name="zone_gesture">Gesture mode</string>
+    <string name="zone_corner">Bottom right corner</string>
     <string name="zone_label">Zone #%1$d</string>
     <string name="show_zones">Show zones</string>
 

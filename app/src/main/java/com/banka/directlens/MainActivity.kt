@@ -7,6 +7,7 @@
  */
 package com.banka.directlens
 
+import android.app.role.RoleManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -36,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -80,6 +83,15 @@ fun playHapticPreview(context: Context, level: Int) {
     }
 }
 
+fun isDefaultAssistant(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        val roleManager = context.getSystemService(Context.ROLE_SERVICE) as? RoleManager
+        return roleManager?.isRoleHeld(RoleManager.ROLE_ASSISTANT) == true
+    }
+    val setting = Settings.Secure.getString(context.contentResolver, "assistant") ?: return false
+    return setting.contains(context.packageName)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainSettingsScreen() {
@@ -89,6 +101,7 @@ fun MainSettingsScreen() {
     val configManager = remember { OverlayConfigurationManager(context) }
     
     var isAccessibilityEnabled by remember { mutableStateOf(isAccessibilityServiceEnabled(context)) }
+    var isAssistantSet by remember { mutableStateOf(isDefaultAssistant(context)) }
     var masterEnabled by remember { mutableStateOf(prefs.getBoolean("master_enabled", true)) }
     var hapticStrength by remember { mutableIntStateOf(prefs.getInt("haptic_strength", 50)) }
     var rainbowFlashEnabled by remember { mutableStateOf(prefs.getBoolean("rainbow_flash_enabled", true)) }
@@ -96,6 +109,16 @@ fun MainSettingsScreen() {
     var showWelcomeDialog by remember { mutableStateOf(prefs.getBoolean("first_launch", true)) }
 
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    val screenWidth = context.resources.displayMetrics.widthPixels
+    val screenHeight = context.resources.displayMetrics.heightPixels
+
+    // Detection du mode de navigation
+    var isGestureMode by remember { 
+        mutableStateOf(Settings.Secure.getInt(context.contentResolver, "navigation_mode", 0) == 2)
+    }
+
+    var showAccessibilityPopup by remember { mutableStateOf(false) }
+    var showAssistantPopup by remember { mutableStateOf(false) }
 
     fun updateConfig(newConfig: OverlayConfig) {
         config = newConfig
@@ -106,10 +129,100 @@ fun MainSettingsScreen() {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 isAccessibilityEnabled = isAccessibilityServiceEnabled(context)
+                isAssistantSet = isDefaultAssistant(context)
+                
+                val currentMode = Settings.Secure.getInt(context.contentResolver, "navigation_mode", 0) == 2
+                if (currentMode != isGestureMode) {
+                    isGestureMode = currentMode
+                    
+                    // ON LIT LA CONFIG FRAICHE POUR ÉVITER LES BUGS DE FERMETURE (STALE CLOSURE)
+                    val freshConfig = configManager.getConfig()
+                    if (freshConfig.segments.size >= 2) {
+                        val newSegments = freshConfig.segments.toMutableList()
+                        // Zone 1 forcee selon mode
+                        newSegments[0] = newSegments[0].copy(isEnabled = isGestureMode)
+                        // Zone 2 forcee selon mode
+                        newSegments[1] = newSegments[1].copy(isEnabled = !isGestureMode)
+                        
+                        val finalConfig = freshConfig.copy(segments = newSegments)
+                        updateConfig(finalConfig)
+                        // Rafraîchir l'état local de l'UI
+                        config = finalConfig
+                    }
+                }
+                
+                if (!showWelcomeDialog && isAccessibilityEnabled && !isGestureMode && !isAssistantSet && !prefs.getBoolean("assistant_popup_dismissed", false)) {
+                    showAssistantPopup = true
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(showWelcomeDialog, isAccessibilityEnabled) {
+        if (!showWelcomeDialog && !isAccessibilityEnabled) {
+            showAccessibilityPopup = true
+        } else if (!showWelcomeDialog && isAccessibilityEnabled && !isGestureMode && !isAssistantSet && !prefs.getBoolean("assistant_popup_dismissed", false)) {
+            showAssistantPopup = true
+        }
+    }
+
+    if (showAccessibilityPopup) {
+        AlertDialog(
+            onDismissRequest = { },
+            confirmButton = {
+                Button(onClick = {
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    showAccessibilityPopup = false
+                }) { Text("Open Settings") }
+            },
+            title = { Text("Permission Required", textAlign = TextAlign.Center) },
+            text = { Text("DirectLens requires Accessibility Service to capture screenshots and launch Google Lens. Please enable it first.", textAlign = TextAlign.Center) },
+            icon = { Icon(Icons.Default.AccessibilityNew, null, tint = MaterialTheme.colorScheme.error) },
+            shape = RoundedCornerShape(28.dp)
+        )
+    }
+
+    if (showAssistantPopup) {
+        AlertDialog(
+            onDismissRequest = { 
+                showAssistantPopup = false
+                prefs.edit().putBoolean("assistant_popup_dismissed", true).apply()
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (config.segments.size >= 2) {
+                        val newSegments = config.segments.toMutableList()
+                        newSegments[0] = newSegments[0].copy(isEnabled = false)
+                        newSegments[1] = newSegments[1].copy(isEnabled = true)
+                        updateConfig(config.copy(segments = newSegments))
+                    }
+                    try {
+                        context.startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS))
+                    } catch (e: Exception) {
+                        context.startActivity(Intent(Settings.ACTION_SETTINGS))
+                    }
+                    showAssistantPopup = false
+                    prefs.edit().putBoolean("assistant_popup_dismissed", true).apply()
+                }) { Text(stringResource(R.string.assistant_button)) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    if (config.segments.size >= 2) {
+                        val newSegments = config.segments.toMutableList()
+                        newSegments[0] = newSegments[0].copy(isEnabled = false)
+                        newSegments[1] = newSegments[1].copy(isEnabled = true)
+                        updateConfig(config.copy(segments = newSegments))
+                    }
+                    showAssistantPopup = false
+                    prefs.edit().putBoolean("assistant_popup_dismissed", true).apply()
+                }) { Text("Maybe later") }
+            },
+            title = { Text(stringResource(R.string.assistant_card_title), textAlign = TextAlign.Center) },
+            text = { Text(stringResource(R.string.assistant_card_desc), textAlign = TextAlign.Center) },
+            shape = RoundedCornerShape(28.dp)
+        )
     }
 
     if (showWelcomeDialog) {
@@ -125,7 +238,7 @@ fun MainSettingsScreen() {
             title = { Text(stringResource(R.string.welcome_title), textAlign = TextAlign.Center) },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(stringResource(R.string.welcome_text), textAlign = TextAlign.Center)
+                    Text(stringResource(R.string.disclosure_text), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.me/banka89"))) },
@@ -157,7 +270,8 @@ fun MainSettingsScreen() {
                         updateConfig(configManager.getConfig())
                         hapticStrength = 50
                         rainbowFlashEnabled = true
-                        prefs.edit().putInt("haptic_strength", 50).putBoolean("rainbow_flash_enabled", true).apply()
+                        masterEnabled = true
+                        prefs.edit().putInt("haptic_strength", 50).putBoolean("rainbow_flash_enabled", true).putBoolean("master_enabled", true).apply()
                     }) { Icon(Icons.Default.Refresh, contentDescription = "Reset") }
                 }
             )
@@ -202,7 +316,62 @@ fun MainSettingsScreen() {
             
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Permission Warning (Shown if accessibility is disabled)
+            // 1. Service Switch
+            SettingsToggleItem(
+                title = stringResource(R.string.service_active),
+                subtitle = if (masterEnabled) stringResource(R.string.service_active_sub) else stringResource(R.string.service_hidden_sub),
+                icon = Icons.Default.PowerSettingsNew,
+                checked = masterEnabled,
+                onCheckedChange = {
+                    masterEnabled = it
+                    prefs.edit().putBoolean("master_enabled", it).apply()
+                }
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // SECTION ASSISTANT
+            SettingsSectionHeader(title = stringResource(R.string.assistant_header))
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = if (!isGestureMode && !isAssistantSet) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f) 
+                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                ),
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(if (isAssistantSet) Icons.Default.CheckCircle else Icons.Default.Android, null, tint = if (isAssistantSet) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(stringResource(R.string.assistant_card_title), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                    }
+                    Text(
+                        text = if (isAssistantSet) "DirectLens is currently your default assistant. Long-press Home to trigger it." else stringResource(R.string.assistant_card_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                    Button(
+                        onClick = { 
+                            try {
+                                val intent = Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                val intent = Intent(Settings.ACTION_SETTINGS)
+                                context.startActivity(intent)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = if (isAssistantSet) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary) else ButtonDefaults.buttonColors()
+                    ) {
+                        Text(if (isAssistantSet) "Change Assistant" else stringResource(R.string.assistant_button))
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+
             if (!isAccessibilityEnabled) {
                 Card(
                     onClick = { context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) },
@@ -219,23 +388,9 @@ fun MainSettingsScreen() {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-            } else {
-                // 1. Service Switch (Only shown if accessibility is enabled)
-                SettingsToggleItem(
-                    title = stringResource(R.string.service_active),
-                    subtitle = if (masterEnabled) stringResource(R.string.service_active_sub) else stringResource(R.string.service_hidden_sub),
-                    icon = Icons.Default.PowerSettingsNew,
-                    checked = masterEnabled,
-                    onCheckedChange = {
-                        masterEnabled = it
-                        prefs.edit().putBoolean("master_enabled", it).apply()
-                    }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
             
-            // Rate Us Card
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)),
                 shape = RoundedCornerShape(24.dp),
@@ -282,23 +437,24 @@ fun MainSettingsScreen() {
             Spacer(modifier = Modifier.height(24.dp))
 
             // 3. Haptique HD
-            SettingsSectionHeader(title = stringResource(R.string.haptic_header))
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(stringResource(R.string.haptic_strength), style = MaterialTheme.typography.titleSmall)
-                        Text("$hapticStrength%", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            if (isGestureMode) {
+                SettingsSectionHeader(title = stringResource(R.string.haptic_header))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(stringResource(R.string.haptic_strength), style = MaterialTheme.typography.titleSmall)
+                            Text("$hapticStrength%", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        }
+                        Slider(value = hapticStrength.toFloat(), onValueChange = { hapticStrength = it.toInt(); prefs.edit().putInt("haptic_strength", it.toInt()).apply(); playHapticPreview(context, it.toInt()) }, valueRange = 1f..100f)
+                        Text(stringResource(R.string.haptic_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Slider(value = hapticStrength.toFloat(), onValueChange = { hapticStrength = it.toInt(); prefs.edit().putInt("haptic_strength", it.toInt()).apply(); playHapticPreview(context, it.toInt()) }, valueRange = 1f..100f)
-                    Text(stringResource(R.string.haptic_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             // 4. Zones de détection
             Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -306,10 +462,19 @@ fun MainSettingsScreen() {
                 Switch(checked = config.isVisible, onCheckedChange = { updateConfig(config.copy(isVisible = it)) }, thumbContent = { Icon(Icons.Default.Visibility, null, modifier = Modifier.size(12.dp)) })
             }
             config.segments.forEachIndexed { index, segment ->
-                SegmentEditorItem(index = index, segment = segment, isExpanded = config.activeSegmentIndex == index, onExpandToggle = { updateConfig(config.copy(activeSegmentIndex = if (config.activeSegmentIndex == index) -1 else index)) }, onUpdate = { updated -> val newSegments = config.segments.toMutableList(); newSegments[index] = updated; updateConfig(config.copy(segments = newSegments)) }, onDelete = { val newSegments = config.segments.toMutableList(); newSegments.removeAt(index); updateConfig(config.copy(segments = newSegments, activeSegmentIndex = -1)) })
+                SegmentEditorItem(
+                    index = index, 
+                    segment = segment, 
+                    screenWidth = screenWidth,
+                    screenHeight = screenHeight,
+                    isExpanded = config.activeSegmentIndex == index, 
+                    onExpandToggle = { updateConfig(config.copy(activeSegmentIndex = if (config.activeSegmentIndex == index) -1 else index)) }, 
+                    onUpdate = { updated -> val newSegments = config.segments.toMutableList(); newSegments[index] = updated; updateConfig(config.copy(segments = newSegments)) }, 
+                    onDelete = { val newSegments = config.segments.toMutableList(); newSegments.removeAt(index); updateConfig(config.copy(segments = newSegments, activeSegmentIndex = -1)) }
+                )
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            if (masterEnabled && isAccessibilityEnabled) {
+            if (masterEnabled) {
                 Button(onClick = { val currentSegments = config.segments.toMutableList(); val metrics = context.resources.displayMetrics; currentSegments.add(OverlaySegment(yOffset = metrics.heightPixels - 200)); updateConfig(config.copy(segments = currentSegments)) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
                     Icon(Icons.Default.Add, null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -319,10 +484,9 @@ fun MainSettingsScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 5. SECTION INFORMATIONS (FAQ & GITHUB)
+            // 5. SECTION INFORMATIONS
             SettingsSectionHeader(title = stringResource(R.string.about_header))
             
-            // GitHub Button
             Button(
                 onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Bankairim/DirectLens/"))) },
                 modifier = Modifier.fillMaxWidth(),
@@ -346,7 +510,6 @@ fun MainSettingsScreen() {
             
             Spacer(modifier = Modifier.height(48.dp))
             
-            // FOOTER AVEC COPYRIGHT DYNAMIQUE
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Image(painterResource(R.drawable.title), null, modifier = Modifier.height(20.dp).alpha(0.4f), contentScale = ContentScale.Fit)
                 Text(
@@ -408,26 +571,44 @@ fun SettingsToggleItem(title: String, subtitle: String, icon: ImageVector, check
 }
 
 @Composable
-fun SegmentEditorItem(index: Int, segment: OverlaySegment, isExpanded: Boolean, onExpandToggle: () -> Unit, onUpdate: (OverlaySegment) -> Unit, onDelete: () -> Unit) {
+fun SegmentEditorItem(index: Int, segment: OverlaySegment, screenWidth: Int, screenHeight: Int, isExpanded: Boolean, onExpandToggle: () -> Unit, onUpdate: (OverlaySegment) -> Unit, onDelete: () -> Unit) {
+    val alpha = if (segment.isEnabled) 1f else 0.5f
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().alpha(alpha),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { onExpandToggle() }) {
-                Icon(Icons.Default.Rectangle, null, tint = MaterialTheme.colorScheme.primary)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (index == 0) Icons.Default.Gesture 
+                                 else if (index == 1) Icons.Default.Square 
+                                 else Icons.Default.Rectangle,
+                    contentDescription = null,
+                    tint = if (segment.isEnabled) MaterialTheme.colorScheme.primary else Color.Gray
+                )
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(stringResource(R.string.zone_label, index + 1), fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
-                Icon(if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, null)
+                Text(
+                    text = if (index == 0) stringResource(R.string.zone_gesture)
+                           else if (index == 1) stringResource(R.string.zone_corner)
+                           else stringResource(R.string.zone_label, index + 1),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(checked = segment.isEnabled, onCheckedChange = { onUpdate(segment.copy(isEnabled = it)) }, modifier = Modifier.scale(0.8f))
+                
+                if (index > 1) {
+                    IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
+                }
+
+                IconButton(onClick = onExpandToggle) { Icon(if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, null) }
             }
             AnimatedVisibility(visible = isExpanded) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
-                    SliderWithLabel(stringResource(R.string.dim_width), segment.width, 100, 1080) { onUpdate(segment.copy(width = it)) }
+                    SliderWithLabel(stringResource(R.string.dim_width), segment.width, 100, screenWidth) { onUpdate(segment.copy(width = it)) }
                     SliderWithLabel(stringResource(R.string.dim_height), segment.height, 50, 600) { onUpdate(segment.copy(height = it)) }
-                    SliderWithLabel(stringResource(R.string.pos_x), segment.xOffset, 0, 1080) { onUpdate(segment.copy(xOffset = it)) }
-                    SliderWithLabel(stringResource(R.string.pos_y), segment.yOffset, 0, 2600) { onUpdate(segment.copy(yOffset = it)) }
+                    SliderWithLabel(stringResource(R.string.pos_x), segment.xOffset, 0, screenWidth) { onUpdate(segment.copy(xOffset = it)) }
+                    SliderWithLabel(stringResource(R.string.pos_y), segment.yOffset, 0, screenHeight) { onUpdate(segment.copy(yOffset = it)) }
                 }
             }
         }

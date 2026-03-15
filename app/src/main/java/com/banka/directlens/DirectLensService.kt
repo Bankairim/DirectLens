@@ -26,6 +26,11 @@ import java.util.concurrent.Executors
 
 class DirectLensService : AccessibilityService() {
 
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        var instance: DirectLensService? = null
+    }
+
     private var windowManager: WindowManager? = null
     private val overlayViews = mutableListOf<View>()
     private var feedbackView: View? = null
@@ -39,6 +44,7 @@ class DirectLensService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        instance = this
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         configManager = OverlayConfigurationManager(this)
         prefs.registerOnSharedPreferenceChangeListener(prefsListener)
@@ -56,6 +62,8 @@ class DirectLensService : AccessibilityService() {
             if (!masterEnabled || !config.isEnabled) return@post
 
             config.segments.forEachIndexed { index, segment ->
+                if (!segment.isEnabled) return@forEachIndexed
+
                 val view = View(this)
                 val params = WindowManager.LayoutParams(
                     if (segment.width <= 0) resources.displayMetrics.widthPixels else segment.width,
@@ -96,8 +104,6 @@ class DirectLensService : AccessibilityService() {
 
     private fun showRainbowFlash() {
         if (!prefs.getBoolean("rainbow_flash_enabled", true)) return
-        
-        // Ensure old view is removed
         removeFeedbackView()
 
         val googleColors = intArrayOf(
@@ -145,20 +151,15 @@ class DirectLensService : AccessibilityService() {
 
         try {
             windowManager?.addView(flashView, params)
-            
             ValueAnimator.ofFloat(0f, 1f).apply {
-                duration = 1500 // Animation plus longue pour couvrir le lancement
+                duration = 1500
                 addUpdateListener { animator ->
                     val p = animator.animatedValue as Float
                     flashView.scanProgress = p
-                    if (p > 0.6f) { // Commence à disparaître seulement après 60% du trajet
-                        flashView.alpha = 0.15f * (1f - (p - 0.6f) * 2.5f)
-                    }
+                    if (p > 0.6f) flashView.alpha = 0.15f * (1f - (p - 0.6f) * 2.5f)
                 }
                 addListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        removeFeedbackView()
-                    }
+                    override fun onAnimationEnd(animation: Animator) { removeFeedbackView() }
                 })
                 start()
             }
@@ -181,14 +182,17 @@ class DirectLensService : AccessibilityService() {
         var startY = 0f
 
         val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                if (segment.gestures[GestureType.SINGLE_TAP] == ActionType.CTS_LENS) { executeActionSequence(); return true }
-                propagateSingleTap(view, e.rawX, e.rawY)
-                return false
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                if (!hasTriggered) propagateSingleTap(view, e.rawX, e.rawY)
+                return true
             }
-            override fun onDoubleTap(e: MotionEvent): Boolean {
-                if (segment.gestures[GestureType.DOUBLE_TAP] == ActionType.CTS_LENS) { executeActionSequence(); return true }
-                return false
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent, vx: Float, vy: Float): Boolean {
+                if (vy < -500 && !hasTriggered) { 
+                    isTouching = false
+                    handler.removeCallbacksAndMessages(null)
+                    return false 
+                }
+                return super.onFling(e1, e2, vx, vy)
             }
         })
 
@@ -215,72 +219,66 @@ class DirectLensService : AccessibilityService() {
             if (!isTouching || hasTriggered) return@Runnable
             hasTriggered = true
             (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
-            if (segment.gestures[GestureType.LONG_PRESS] == ActionType.CTS_LENS) executeActionSequence()
+            executeActionSequence()
         }
 
         view.setOnTouchListener { _, event ->
-            if (segment.gestures[GestureType.LONG_PRESS] == ActionType.CTS_LENS) {
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        isTouching = true; hasTriggered = false; startX = event.rawX; startY = event.rawY
-                        BitmapCache.bitmap = null 
-                        handler.postDelayed(startVibrationRunnable, 50)
-                        handler.postDelayed(triggerRunnable, 500)
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        if (Math.abs(event.rawX - startX) > 60 || Math.abs(event.rawY - startY) > 60) {
-                            if (!hasTriggered) {
-                                isTouching = false
-                                handler.removeCallbacks(startVibrationRunnable); handler.removeCallbacks(triggerRunnable)
-                                (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
-                            }
-                        }
-                    }
-                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+            gestureDetector.onTouchEvent(event)
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    isTouching = true; hasTriggered = false; startX = event.rawX; startY = event.rawY
+                    BitmapCache.bitmap = null 
+                    handler.postDelayed(startVibrationRunnable, 50)
+                    handler.postDelayed(triggerRunnable, 500)
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (Math.abs(event.rawX - startX) > 80 || Math.abs(event.rawY - startY) > 80) {
                         if (!hasTriggered) {
                             isTouching = false
-                            handler.removeCallbacks(startVibrationRunnable); handler.removeCallbacks(triggerRunnable)
+                            handler.removeCallbacksAndMessages(null)
                             (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
                         }
                     }
                 }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (!hasTriggered) {
+                        isTouching = false
+                        handler.removeCallbacksAndMessages(null)
+                        (getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
+                    }
+                }
             }
-            gestureDetector.onTouchEvent(event)
             true
         }
     }
 
-    private fun executeActionSequence() {
+    internal fun executeActionSequence(skipVibration: Boolean = false) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
-
-        // 1. Capture immédiate (invisible)
         takeScreenshot(Display.DEFAULT_DISPLAY, executor, object : TakeScreenshotCallback {
             override fun onSuccess(result: ScreenshotResult) {
                 val hwBuffer = result.hardwareBuffer
                 val bitmap = Bitmap.wrapHardwareBuffer(hwBuffer, result.colorSpace)?.copy(Bitmap.Config.ARGB_8888, false)
                 hwBuffer.close()
-                
                 Handler(Looper.getMainLooper()).post {
                     if (bitmap != null) {
                         BitmapCache.bitmap = bitmap
-                        
-                        // 2. Lancement Animation + Vibration
                         showRainbowFlash() 
                         
-                        val hapticStrength = prefs.getInt("haptic_strength", 50)
-                        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                        if (hapticStrength > 0) {
-                            val amp = (hapticStrength * 2.55f).toInt().coerceIn(1, 255)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) vibrator.vibrate(VibrationEffect.createOneShot(40, amp))
-                            else vibrator.vibrate(40)
+                        if (!skipVibration) {
+                            val hapticStrength = prefs.getInt("haptic_strength", 50)
+                            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                            if (hapticStrength > 0) {
+                                val amp = (hapticStrength * 2.55f).toInt().coerceIn(1, 255)
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) vibrator.vibrate(VibrationEffect.createOneShot(40, amp))
+                                else vibrator.vibrate(40)
+                            }
                         }
 
-                        // 3. On laisse l'animation "peindre" quelques frames avant le freeze du Intent
                         Handler(Looper.getMainLooper()).postDelayed({
                             startActivity(Intent(this@DirectLensService, TrampolineActivity::class.java).apply {
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION)
                             })
-                        }, 120) // Délai optimal pour que l'anim soit visible avant le freeze
+                        }, 120)
                     }
                 }
             }
@@ -312,6 +310,7 @@ class DirectLensService : AccessibilityService() {
     override fun onInterrupt() {}
     override fun onDestroy() {
         super.onDestroy()
+        instance = null
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
         overlayViews.forEach { try { windowManager?.removeView(it) } catch (e: Exception) {} }
         removeFeedbackView()

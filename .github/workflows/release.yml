@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # Se déclenche lors d'un tag commençant par 'v' (ex: v1.0)
+      - 'v*'
 
 jobs:
   build:
@@ -27,11 +27,22 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease --stacktrace
 
-      - name: Upload APK Artifact
+      # Cette étape transforme ton APK non-signé en APK officiel avec TA clé
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload Signed APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: directlens-apk
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          path: ${{ steps.sign_app.outputs.signedReleaseFile }}
 
   release:
     name: Create GitHub Release
@@ -49,7 +60,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app-release-unsigned.apk # Note: Actuellement non signé
+          # On récupère automatiquement le nom du fichier signé généré plus haut
+          files: |
+            *.apk
           generate_release_notes: true
           draft: false
           prerelease: false
