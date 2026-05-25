@@ -53,6 +53,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.banka.directlens.ui.theme.DirectLensTheme
 import java.util.Calendar
+import android.os.PowerManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +93,24 @@ fun isDefaultAssistant(context: Context): Boolean {
     return setting.contains(context.packageName)
 }
 
+fun requestBatteryOptimizationExemption(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (!pm.isIgnoringBatteryOptimizations(context.packageName)) {
+            try {
+                context.startActivity(
+                    Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                    }
+                )
+            } catch (e: Exception) {
+                // Certaines ROMs bloquent cet intent, fallback vers les réglages généraux
+                context.startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainSettingsScreen() {
@@ -110,7 +129,7 @@ fun MainSettingsScreen() {
 
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val screenWidth = context.resources.displayMetrics.widthPixels
-    val screenHeight = context.resources.displayMetrics.heightPixels
+    val screenHeight = getUsableHeight(context)
 
     // Detection du mode de navigation
     var isGestureMode by remember { 
@@ -161,6 +180,9 @@ fun MainSettingsScreen() {
     }
 
     LaunchedEffect(showWelcomeDialog, isAccessibilityEnabled) {
+        if (!showWelcomeDialog) {
+            requestBatteryOptimizationExemption(context)
+        }
         if (!showWelcomeDialog && !isAccessibilityEnabled) {
             showAccessibilityPopup = true
         } else if (!showWelcomeDialog && isAccessibilityEnabled && !isGestureMode && !isAssistantSet && !prefs.getBoolean("assistant_popup_dismissed", false)) {
@@ -252,6 +274,7 @@ fun MainSettingsScreen() {
             shape = RoundedCornerShape(28.dp)
         )
     }
+
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -420,8 +443,34 @@ fun MainSettingsScreen() {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            // 2. Zones de détection
+            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.zones_header).uppercase(), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp), color = MaterialTheme.colorScheme.primary)
+                Switch(checked = config.isVisible, onCheckedChange = { updateConfig(config.copy(isVisible = it)) }, thumbContent = { Icon(Icons.Default.Visibility, null, modifier = Modifier.size(12.dp)) })
+            }
+            config.segments.forEachIndexed { index, segment ->
+                SegmentEditorItem(
+                    index = index,
+                    segment = segment,
+                    screenWidth = screenWidth,
+                    screenHeight = screenHeight,
+                    isExpanded = config.activeSegmentIndex == index,
+                    onExpandToggle = { updateConfig(config.copy(activeSegmentIndex = if (config.activeSegmentIndex == index) -1 else index)) },
+                    onUpdate = { updated -> val newSegments = config.segments.toMutableList(); newSegments[index] = updated; updateConfig(config.copy(segments = newSegments)) },
+                    onDelete = { val newSegments = config.segments.toMutableList(); newSegments.removeAt(index); updateConfig(config.copy(segments = newSegments, activeSegmentIndex = -1)) }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            if (masterEnabled) {
+                Button(onClick = { val currentSegments = config.segments.toMutableList(); currentSegments.add(OverlaySegment(yOffset = getUsableHeight(context) - 200)); updateConfig(config.copy(segments = currentSegments)) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+                    Icon(Icons.Default.Add, null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.add_zone))
+                }
+            }
 
-            // 2. Visual Effects
+            Spacer(modifier = Modifier.height(32.dp))
+            // 3. Visual Effects
             SettingsSectionHeader(title = stringResource(R.string.visual_header))
             SettingsToggleItem(
                 title = stringResource(R.string.rainbow_flash),
@@ -436,7 +485,7 @@ fun MainSettingsScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 3. Haptique HD
+            // 4. Haptique HD
             if (isGestureMode) {
                 SettingsSectionHeader(title = stringResource(R.string.haptic_header))
                 Card(
@@ -455,34 +504,6 @@ fun MainSettingsScreen() {
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }
-
-            // 4. Zones de détection
-            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.zones_header).uppercase(), style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp), color = MaterialTheme.colorScheme.primary)
-                Switch(checked = config.isVisible, onCheckedChange = { updateConfig(config.copy(isVisible = it)) }, thumbContent = { Icon(Icons.Default.Visibility, null, modifier = Modifier.size(12.dp)) })
-            }
-            config.segments.forEachIndexed { index, segment ->
-                SegmentEditorItem(
-                    index = index, 
-                    segment = segment, 
-                    screenWidth = screenWidth,
-                    screenHeight = screenHeight,
-                    isExpanded = config.activeSegmentIndex == index, 
-                    onExpandToggle = { updateConfig(config.copy(activeSegmentIndex = if (config.activeSegmentIndex == index) -1 else index)) }, 
-                    onUpdate = { updated -> val newSegments = config.segments.toMutableList(); newSegments[index] = updated; updateConfig(config.copy(segments = newSegments)) }, 
-                    onDelete = { val newSegments = config.segments.toMutableList(); newSegments.removeAt(index); updateConfig(config.copy(segments = newSegments, activeSegmentIndex = -1)) }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            if (masterEnabled) {
-                Button(onClick = { val currentSegments = config.segments.toMutableList(); val metrics = context.resources.displayMetrics; currentSegments.add(OverlaySegment(yOffset = metrics.heightPixels - 200)); updateConfig(config.copy(segments = currentSegments)) }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-                    Icon(Icons.Default.Add, null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.add_zone))
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
 
             // 5. SECTION INFORMATIONS
             SettingsSectionHeader(title = stringResource(R.string.about_header))

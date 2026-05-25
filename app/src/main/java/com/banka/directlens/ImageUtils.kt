@@ -17,10 +17,9 @@ object ImageUtils {
         val cachePath = File(context.cacheDir, "images")
         cachePath.mkdirs()
         val file = File(cachePath, "screenshot.png")
-        val fileOutputStream = FileOutputStream(file)
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream)
-        fileOutputStream.flush()
-        fileOutputStream.close()
+        FileOutputStream(file).use { fos ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+        }
         return file.absolutePath
     }
 }

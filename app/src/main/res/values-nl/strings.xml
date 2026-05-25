@@ -28,7 +28,15 @@
     <string name="rainbow_flash">Regenboog Flash</string>
     <string name="rainbow_flash_desc">Toon een subtiele Google-gekleurde animatie bij activatie.</string>
 
+    <!-- Assistant Role -->
+    <string name="assistant_header">Digitale Assistent</string>
+    <string name="assistant_card_title">Gebruik de Home-knop</string>
+    <string name="assistant_card_desc">Als je knopnavigatie gebruikt, stel DirectLens in als standaard assistent om het te activeren door lang op Home te drukken zonder het te blokkeren.</string>
+    <string name="assistant_button">Instellen als standaard assistent</string>
+
     <!-- Overlay Zones -->
+    <string name="zone_gesture">Gestureermodus</string>
+    <string name="zone_corner">Rechteronderhoek</string>
     <string name="zones_header">Detectiezones</string>
     <string name="add_zone">Zone toevoegen</string>
     <string name="zone_label">Zone #%1$d</string>
@@ -49,11 +57,11 @@
     <string name="faq_privacy_title">Privacy &amp; Gegevens</string>
     <string name="faq_privacy_text">DirectLens verzamelt absoluut geen persoonlijke gegevens. Screenshots worden lokaal op uw apparaat gemaakt en rechtstreeks naar de officiële Google-app doorgestuurd. We gebruiken geen externe servers en hebben geen trackingmechanismen.</string>
     <string name="faq_disclaimer_title">Juridische Disclaimer</string>
-    <string name="faq_disclaimer_text">DirectLens is een onafhankelijk, open-source project. Het is niet gelieerd aan, geautoriseerd door, onderhouden door, gesponsord door of onderschreven door Google LLC. \"Google Lens\" is un handelsmerk van Google LLC. Zodra een afbeelding wordt doorgestuurd naar de Google-app, zijn de eigen Servicevoorwaarden en het Privacybeleid van Google van toepassing op die afbeelding en de verdere verwerking ervan.</string>
+    <string name="faq_disclaimer_text">DirectLens is een onafhankelijk, open-source project. Het is niet gelieerd aan, geautoriseerd door, onderhouden door, gesponsord door of onderschreven door Google LLC. \"Google Lens\" is een handelsmerk van Google LLC. Zodra een afbeelding wordt doorgestuurd naar de Google-app, zijn de eigen Servicevoorwaarden en het Privacybeleid van Google van toepassing op die afbeelding en de verdere verwerking ervan.</string>
     <string name="faq_opensource_title">Open Source</string>
     <string name="faq_opensource_text">DirectLens is gratis en open source (GPLv3). Er is geen root-toegang vereist.</string>
     <string name="github_button">Bekijken op GitHub</string>
-    <string name="donate_button">☕ Ondersteun op PayPal</string>
+    <string name="donate_button">☕ Doneren</string>
 
     <string name="rate_title">Hou je van deze app?</string>
     <string name="rate_text">Steun een onafhankelijke ontwikkelaar! Een 5-sterren review helpt meer dan je denkt.</string>

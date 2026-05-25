@@ -8,5 +8,6 @@ package com.banka.directlens
 import android.graphics.Bitmap
 
 object BitmapCache {
+    @Volatile
     var bitmap: Bitmap? = null
 }

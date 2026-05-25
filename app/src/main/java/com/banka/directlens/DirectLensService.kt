@@ -42,10 +42,14 @@ class DirectLensService : AccessibilityService() {
         if (key == "overlay_config" || key == "master_enabled") updateOverlay() 
     }
 
+    // Dans onServiceConnected, toujours nettoyer avant de reconstruire
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        // Nettoyage défensif au cas où des vues fantômes traîneraient
+        overlayViews.forEach { try { windowManager?.removeViewImmediate(it) } catch (_: Exception) {} }
+        overlayViews.clear()
         configManager = OverlayConfigurationManager(this)
         prefs.registerOnSharedPreferenceChangeListener(prefsListener)
         updateOverlay()
@@ -56,7 +60,9 @@ class DirectLensService : AccessibilityService() {
             val config = configManager.getConfig()
             val masterEnabled = prefs.getBoolean("master_enabled", true)
 
-            overlayViews.forEach { try { windowManager?.removeView(it) } catch (e: Exception) {} }
+            overlayViews.forEach {
+                try { windowManager?.removeViewImmediate(it) } catch (_: Exception) {}
+            }
             overlayViews.clear()
 
             if (!masterEnabled || !config.isEnabled) return@post
@@ -312,7 +318,7 @@ class DirectLensService : AccessibilityService() {
         super.onDestroy()
         instance = null
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
-        overlayViews.forEach { try { windowManager?.removeView(it) } catch (e: Exception) {} }
+        overlayViews.forEach { try { windowManager?.removeViewImmediate(it) } catch (e: Exception) {} }
         removeFeedbackView()
     }
 }

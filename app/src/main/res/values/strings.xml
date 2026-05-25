@@ -62,7 +62,7 @@
     <string name="faq_opensource_text">DirectLens is free and open source (GPLv3). It requires no root access.</string>
 
     <string name="github_button">View on GitHub</string>
-    <string name="donate_button">☕ Support on PayPal</string>
+    <string name="donate_button">☕ Donate</string>
 
     <string name="rate_title">Love this app?</string>
     <string name="rate_text">Support an independent developer! A 5-star review helps more than you think.</string>

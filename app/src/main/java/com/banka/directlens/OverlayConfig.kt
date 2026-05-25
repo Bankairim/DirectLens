@@ -49,17 +49,16 @@ class OverlayConfigurationManager(private val context: Context) {
     fun getDefaultConfig(): OverlayConfig {
         val metrics = context.resources.displayMetrics
         val screenWidth = metrics.widthPixels
-        val screenHeight = metrics.heightPixels
 
-        // Detection du mode de navigation
+        val usableHeight = getUsableHeight(context)
+
         val navMode = Settings.Secure.getInt(context.contentResolver, "navigation_mode", 0)
         val isGestureMode = navMode == 2
 
-        // Zone 1 : Pilule centrale (Optimisée pour Gestes)
         val w1 = (screenWidth * 0.28f).toInt()
         val h1 = (40f * metrics.density).toInt()
         val x1 = (screenWidth - w1) / 2
-        val y1 = screenHeight - h1
+        val y1 = usableHeight - h1          // ← était screenHeight - h1
         val centerPill = OverlaySegment(
             width = w1,
             height = h1,
@@ -69,13 +68,12 @@ class OverlayConfigurationManager(private val context: Context) {
             gestures = mapOf(GestureType.LONG_PRESS to ActionType.CTS_LENS)
         )
 
-        // Zone 2 : Petit cube coin (Optimisée pour Boutons)
         val cubeSize = 100
         val cornerCube = OverlaySegment(
             width = cubeSize,
             height = cubeSize,
             xOffset = screenWidth - cubeSize,
-            yOffset = screenHeight - cubeSize,
+            yOffset = usableHeight - cubeSize,   // ← était screenHeight - cubeSize
             isEnabled = !isGestureMode,
             gestures = mapOf(GestureType.LONG_PRESS to ActionType.CTS_LENS)
         )

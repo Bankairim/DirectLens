@@ -7,19 +7,29 @@ android {
     namespace = "com.banka.directlens"
     compileSdk = 35
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("directlens.keystore")
+            storePassword = "karimaliceoportalocorp"
+            keyAlias = "key0"
+            keyPassword = "karimaliceoportalocorp"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.banka.directlens"
         minSdk = 30
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.0.5"
+        versionCode = 6
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

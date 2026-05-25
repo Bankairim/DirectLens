@@ -28,11 +28,19 @@
     <string name="rainbow_flash">Flash arcoíris</string>
     <string name="rainbow_flash_desc">Muestra una sutil animación con los colores de Google al activarse.</string>
 
+    <!-- Assistant Role -->
+    <string name="assistant_header">Asistente Digital</string>
+    <string name="assistant_card_title">Usar el botón Home</string>
+    <string name="assistant_card_desc">Si usas la navegación por botones, establece DirectLens como asistente predeterminado para activarlo manteniendo pulsado Home sin bloquearlo.</string>
+    <string name="assistant_button">Establecer como Asistente predeterminado</string>
+
     <!-- Overlay Zones -->
     <string name="zones_header">Zonas de detección</string>
     <string name="add_zone">Añadir una zona</string>
     <string name="zone_label">Zona #%1$d</string>
     <string name="show_zones">Mostrar zonas</string>
+    <string name="zone_gesture">Modo gestos</string>
+    <string name="zone_corner">Esquina inferior derecha</string>
 
     <!-- Editor -->
     <string name="dim_width">Ancho</string>
@@ -54,7 +62,7 @@
     <string name="faq_opensource_text">DirectLens es gratuito y de código abierto (GPLv3). Esta aplicación no requiere root.</string>
 
     <string name="github_button">Ver en GitHub</string>
-    <string name="donate_button">☕ Apoyar en PayPal</string>
+    <string name="donate_button">☕ Donar</string>
 
     <string name="rate_title">¿Te gusta esta app?</string>
     <string name="rate_text">¡Apoya a un desarrollador independiente! Una reseña de 5 estrellas ayuda más de lo que crees.</string>
